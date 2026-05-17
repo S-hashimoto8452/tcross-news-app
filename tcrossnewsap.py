@@ -100,7 +100,7 @@ def image_to_data_url(uploaded_file):
     mime = uploaded_file.type
     return f"data:{mime};base64,{image_base64}"
 
-st.set_page_config(page_title="TCROSS NEWS Chat", layout="wide")
+st.set_page_config(page_title="TCROSS NEWS Creator version 1.0", layout="wide")
 
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
@@ -115,7 +115,7 @@ if "uploaded_images" not in st.session_state:
     st.session_state.uploaded_images = []
 
 if not st.session_state.authenticated:
-    st.title("TCROSS NEWS Creator ログイン")
+    st.title("TCROSS NEWS Creator version 1.0ログイン")
 
     password = st.text_input("アプリパスワード", type="password")
     api_key = st.text_input("OpenAI APIキー", type="password")
