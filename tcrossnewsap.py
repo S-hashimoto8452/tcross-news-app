@@ -155,7 +155,7 @@ if not st.session_state.authenticated:
 
     st.stop()
 
-client = OpenAI(api_key=st.session_state.api_key)
+client = OpenAI(api_key=st.session_state.api_key.strip())
 
 st.title("TCROSS NEWS Creator")
 
@@ -217,18 +217,29 @@ if prompt:
         })
 
     with st.spinner("生成中..."):
+
+        api_messages = [
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT
+            }
+        ]
+
+        for msg in st.session_state.messages[-10:]:
+
+            api_messages.append({
+                "role": msg["role"],
+                "content": msg["content"]
+            })
+
+        api_messages.append({
+            "role": "user",
+            "content": content
+        })
+
         response = client.responses.create(
-            model="gpt-4.1",
-            input=[
-                {
-                    "role": "system",
-                    "content": SYSTEM_PROMPT
-                },
-                {
-                    "role": "user",
-                    "content": content
-                }
-            ]
+            model="gpt-4o",
+            input=api_messages
         )
 
     answer = response.output_text
