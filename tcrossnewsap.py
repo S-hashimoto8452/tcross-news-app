@@ -96,6 +96,15 @@ SYSTEM_PROMPT = """
 ・結果記載は「有意に低かった」「高かった」「増加した」「減少した」を用いる。
 ・「示された」「考えられる」は使用しない。
 ・「〜することが示された」は使用せず、「〜であった」と記載する。
+・p値、HR、RR、95%CIは必ず比較結果と同一文章内に含める。
+・p値のみを独立文章として記載してはならない。
+・「p＝0.03であった。」のような単独表現は禁止する。
+・比較結果の最後に括弧内で統計値を記載する。
+・p interactionも必ず文章内へ含める。
+例：
+○○群は○○群と比較して有意差はなかった（p interaction＝0.973）。
+例：
+○○群では軽度AFMRが71%、中等度AFMRが18%、重度AFMRが0であり、SOC群との差はなかった（p interaction＝0.973）。
 
 【文体例】
 
@@ -190,7 +199,7 @@ if "uploaded_images" not in st.session_state:
     st.session_state.uploaded_images = []
 
 if not st.session_state.authenticated:
-    st.title("TCROSS NEWS Creator version 1.0ログイン")
+    st.title("TCROSS NEWS Creator version 2.0ログイン")
 
     password = st.text_input("アプリパスワード", type="password")
     api_key = st.text_input("OpenAI APIキー", type="password")
@@ -212,7 +221,7 @@ if not st.session_state.authenticated:
 
 client = OpenAI(api_key=st.session_state.api_key.strip())
 
-st.title("TCROSS NEWS Creator")
+st.title("TCROSS NEWS Creator  version 2.0")
 
 with st.sidebar:
     st.subheader("スライド画像")
