@@ -1,6 +1,8 @@
 import streamlit as st
 from openai import OpenAI
 import base64
+from PIL import Image
+from io import BytesIO
 
 APP_PASSWORD = "tcross"
 
@@ -157,10 +159,14 @@ SYSTEM_PROMPT = """
 """
 
 def image_to_data_url(uploaded_file):
-    image_bytes = uploaded_file.getvalue()
-    image_base64 = base64.b64encode(image_bytes).decode("utf-8")
-    mime = uploaded_file.type
-    return f"data:{mime};base64,{image_base64}"
+    image = Image.open(uploaded_file)
+    image.thumbnail((1200, 1200))
+
+    buffer = BytesIO()
+    image.convert("RGB").save(buffer, format="JPEG", quality=65)
+
+    image_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    return f"data:image/jpeg;base64,{image_base64}"
 
 st.set_page_config(page_title="TCROSS NEWS Creator version 1.0", layout="wide")
 
@@ -267,7 +273,7 @@ if prompt:
             }
         ]
 
-        for msg in st.session_state.messages[-3:]:
+        for msg in st.session_state.messages[-1:]:
 
             api_messages.append({
                 "role": msg["role"],
