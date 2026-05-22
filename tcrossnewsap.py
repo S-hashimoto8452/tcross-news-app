@@ -302,7 +302,7 @@ if prompt:
         })
 
         response = client.responses.create(
-            model="gpt-4o",
+            model="gpt-4o-mini",
             input=api_messages
         )
 
