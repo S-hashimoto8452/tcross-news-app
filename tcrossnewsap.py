@@ -368,7 +368,9 @@ with st.sidebar:
         st.write(
             f"{len(st.session_state.pasted_images)}枚のスクショを保存中"
         )
-
+    else:
+        st.write("保存中のスクショはありません")
+        
     total_images = (
         len(st.session_state.uploaded_images)
         + len(st.session_state.pasted_images)
