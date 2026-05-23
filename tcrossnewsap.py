@@ -272,7 +272,7 @@ def image_to_data_url(uploaded_file):
     image_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
     return f"data:image/jpeg;base64,{image_base64}"
 
-st.set_page_config(page_title="TCROSS NEWS Creator version 1.0", layout="wide")
+st.set_page_config(page_title="TCROSS NEWS Creator version 3.0", layout="wide")
 
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
@@ -287,7 +287,7 @@ if "uploaded_images" not in st.session_state:
     st.session_state.uploaded_images = []
 
 if not st.session_state.authenticated:
-    st.title("TCROSS NEWS Creator version 2.0ログイン")
+    st.title("TCROSS NEWS Creator version 3.0ログイン")
 
     password = st.text_input("アプリパスワード", type="password")
     api_key = st.text_input("OpenAI APIキー", type="password")
@@ -309,7 +309,7 @@ if not st.session_state.authenticated:
 
 client = OpenAI(api_key=st.session_state.api_key.strip())
 
-st.title("TCROSS NEWS Creator  version 2.0")
+st.title("TCROSS NEWS Creator  version 3.0")
 
 with st.sidebar:
     st.subheader("スライド画像")
