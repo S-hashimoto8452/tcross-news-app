@@ -3,6 +3,7 @@ from openai import OpenAI
 import base64
 from PIL import Image
 from io import BytesIO
+from streamlit_paste_button import paste_image_button as pbutton
 
 APP_PASSWORD = "tcross"
 
@@ -285,6 +286,9 @@ if "messages" not in st.session_state:
 
 if "uploaded_images" not in st.session_state:
     st.session_state.uploaded_images = []
+if "pasted_images" not in st.session_state:
+
+    st.session_state.pasted_images = []
 
 if not st.session_state.authenticated:
     st.title("TCROSS NEWS Creator version 3.0ログイン")
@@ -321,6 +325,16 @@ with st.sidebar:
         accept_multiple_files=True
     )
 
+    paste_result = pbutton("スクショを貼り付け")
+
+    if paste_result.image_data is not None:
+
+        st.session_state.pasted_images.append(
+            paste_result.image_data
+        )
+
+        st.success("スクショを貼り付けました")
+
     if uploaded_files:
         st.session_state.uploaded_images = uploaded_files
 
@@ -331,6 +345,7 @@ with st.sidebar:
 
     if st.button("画像をクリア"):
         st.session_state.uploaded_images = []
+        st.session_state.pasted_images = []
         st.rerun()
 
     if st.button("ログアウト"):
@@ -349,7 +364,7 @@ prompt = st.chat_input(
 )
 
 if prompt:
-    if not st.session_state.uploaded_images:
+    if not st.session_state.uploaded_images and not st.session_state.pasted_images:
 
         st.error("PDFまたは画像をアップロードしてください")
 
@@ -364,6 +379,24 @@ if prompt:
         st.markdown(prompt)
 
     content = []
+    for pasted_img in st.session_state.pasted_images:
+
+        buffer = BytesIO()
+
+        pasted_img.convert("RGB").save(
+            buffer,
+            format="JPEG",
+            quality=65
+        )
+
+        image_base64 = base64.b64encode(
+            buffer.getvalue()
+        ).decode("utf-8")
+
+        content.append({
+            "type": "input_image",
+            "image_url": f"data:image/jpeg;base64,{image_base64}"
+        })
 
     for file in st.session_state.uploaded_images:
 
