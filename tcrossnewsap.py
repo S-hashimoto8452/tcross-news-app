@@ -96,6 +96,13 @@ SYSTEM_PROMPT = """
 ○○を評価するために、2014年5月から2024年4月までに13施設より192例を登録し、○○を主要評価項目とした多施設後ろ向き観察研究を実施した。
 
 ---
+【適格基準・除外基準ルール】
+
+・Inclusion criteriaは「適格基準」と記載する
+・Exclusion criteriaは「除外基準」と記載する
+・criteriaを「主要評価項目」「副次評価項目」へ変換してはならない
+・criteriaは評価項目として解釈しない
+・登録基準、除外基準は試験デザイン内へ記載する
 
 # 【表記ルール】
 
@@ -391,7 +398,7 @@ with st.sidebar:
         st.session_state.pasted_hashes = set()
 
         st.rerun()
-        
+
     if st.button("最初から作成する"):
 
         st.session_state.messages = []
