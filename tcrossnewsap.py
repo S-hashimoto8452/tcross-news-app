@@ -9,8 +9,6 @@ APP_PASSWORD = "tcross"
 SYSTEM_PROMPT = """
 あなたは医師向け専門メディア「テクロスニュース」の編集者である。
 
-ユーザーがアップロードする動画、PDF、音声、テキスト、画像から、テクロスニュース掲載用の記事を作成する。
-
 【最重要ルール】
 
 ・箇条書きは禁止
@@ -168,7 +166,7 @@ def image_to_data_url(uploaded_file):
     image_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
     return f"data:image/jpeg;base64,{image_base64}"
 
-st.set_page_config(page_title="TCROSS NEWS Creator version 1.0", layout="wide")
+st.set_page_config(page_title="TCROSS NEWS Creator", layout="wide")
 
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
@@ -183,7 +181,7 @@ if "uploaded_images" not in st.session_state:
     st.session_state.uploaded_images = []
 
 if not st.session_state.authenticated:
-    st.title("TCROSS NEWS Creator version 2.0ログイン")
+    st.title("TCROSS NEWS Creator ログイン")
 
     password = st.text_input("アプリパスワード", type="password")
     api_key = st.text_input("OpenAI APIキー", type="password")
@@ -197,7 +195,7 @@ if not st.session_state.authenticated:
             st.error("OpenAI APIキーを入力してください")
             st.stop()
 
-        st.session_state.api_key = api_key
+        st.session_state.api_key = api_key.strip()
         st.session_state.authenticated = True
         st.rerun()
 
@@ -205,28 +203,33 @@ if not st.session_state.authenticated:
 
 client = OpenAI(api_key=st.session_state.api_key.strip())
 
-st.title("TCROSS NEWS Creator  version 2.0")
+st.title("TCROSS NEWS Creator")
 
-with st.sidebar:
-    st.subheader("スライド画像")
-    uploaded_files = st.file_uploader(
-        "複数スライドをアップロード",
-        type=["png", "jpg", "jpeg", "webp"],
-        accept_multiple_files=True
-    )
+uploaded_files = st.file_uploader(
+    "スライド画像をアップロードしてください",
+    type=["png", "jpg", "jpeg", "webp"],
+    accept_multiple_files=True
+)
 
-    if uploaded_files:
-        st.session_state.uploaded_images = uploaded_files
+if uploaded_files:
+    st.session_state.uploaded_images = uploaded_files
 
-    if st.session_state.uploaded_images:
-        st.write(f"{len(st.session_state.uploaded_images)}枚の画像を読み込み中")
-        for img in st.session_state.uploaded_images:
+if st.session_state.uploaded_images:
+    st.success(f"{len(st.session_state.uploaded_images)}枚の画像を読み込みました。")
+
+    cols = st.columns(3)
+    for i, img in enumerate(st.session_state.uploaded_images):
+        with cols[i % 3]:
             st.image(img, use_container_width=True)
 
+col1, col2 = st.columns(2)
+
+with col1:
     if st.button("画像をクリア"):
         st.session_state.uploaded_images = []
         st.rerun()
 
+with col2:
     if st.button("ログアウト"):
         st.session_state.authenticated = False
         st.session_state.api_key = ""
@@ -234,12 +237,14 @@ with st.sidebar:
         st.session_state.uploaded_images = []
         st.rerun()
 
+st.divider()
+
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
 prompt = st.chat_input(
-    "例：試験デザインをまとめてください / 背景をまとめてください / 記事化してください"
+    "例：翻訳してください / 背景をまとめてください / 試験デザインをまとめてください / 記事化してください"
 )
 
 if prompt:
@@ -264,36 +269,27 @@ if prompt:
             "image_url": image_to_data_url(img)
         })
 
-    with st.spinner("生成中..."):
-
-        api_messages = [
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT
-            }
-        ]
-
-        for msg in []:
-
-            api_messages.append({
-                "role": msg["role"],
-                "content": msg["content"]
-            })
-
-        api_messages.append({
+    api_messages = [
+        {
+            "role": "system",
+            "content": SYSTEM_PROMPT
+        },
+        {
             "role": "user",
             "content": content
-        })
+        }
+    ]
 
-    try:
-        response = client.responses.create(
-            model="gpt-4o-mini",
-            input=api_messages
-        )
-    except Exception as e:
-        st.error("OpenAI APIエラーが発生しました")
-        st.code(str(e))
-        st.stop()
+    with st.spinner("生成中..."):
+        try:
+            response = client.responses.create(
+                model="gpt-4o-mini",
+                input=api_messages
+            )
+        except Exception as e:
+            st.error("OpenAI APIエラーが発生しました")
+            st.code(str(e))
+            st.stop()
 
     answer = response.output_text
 
