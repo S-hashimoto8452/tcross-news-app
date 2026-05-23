@@ -332,29 +332,29 @@ with st.sidebar:
 
     paste_result = pbutton("スクショを貼り付け")
 
-if paste_result.image_data is not None:
+    if paste_result.image_data is not None:
 
-    buffer = BytesIO()
+        buffer = BytesIO()
 
-    paste_result.image_data.convert("RGB").save(
-        buffer,
-        format="JPEG",
-        quality=65
-    )
-
-    image_bytes = buffer.getvalue()
-
-    image_hash = hashlib.md5(image_bytes).hexdigest()
-
-    if image_hash not in st.session_state.pasted_hashes:
-
-        st.session_state.pasted_images.append(
-            paste_result.image_data
+        paste_result.image_data.convert("RGB").save(
+            buffer,
+            format="JPEG",
+            quality=65
         )
 
-        st.session_state.pasted_hashes.add(image_hash)
+        image_bytes = buffer.getvalue()
 
-        st.success("スクショを貼り付けました")
+        image_hash = hashlib.md5(image_bytes).hexdigest()
+
+        if image_hash not in st.session_state.pasted_hashes:
+
+            st.session_state.pasted_images.append(
+                paste_result.image_data
+            )
+
+            st.session_state.pasted_hashes.add(image_hash)
+
+            st.success("スクショを貼り付けました")
 
     if uploaded_files:
         st.session_state.uploaded_images = uploaded_files
@@ -363,26 +363,37 @@ if paste_result.image_data is not None:
         st.write(
             f"{len(st.session_state.uploaded_images)}ファイルを読み込み中"
         )
+
     if len(st.session_state.pasted_images) > 0:
         st.write(
             f"{len(st.session_state.pasted_images)}枚のスクショを保存中"
         )
-    total_images = len(st.session_state.uploaded_images) + len(st.session_state.pasted_images)
+
+    total_images = (
+        len(st.session_state.uploaded_images)
+        + len(st.session_state.pasted_images)
+    )
 
     if total_images > 0:
-        st.info(f"合計{total_images}枚を解析対象にしています")
+        st.info(
+            f"合計{total_images}枚を解析対象にしています"
+        )
 
     if st.button("画像をクリア"):
+
         st.session_state.uploaded_images = []
         st.session_state.pasted_images = []
         st.session_state.pasted_hashes = set()
+
         st.rerun()
 
     if st.button("ログアウト"):
+
         st.session_state.authenticated = False
         st.session_state.api_key = ""
         st.session_state.messages = []
         st.session_state.uploaded_images = []
+
         st.rerun()
 
 for msg in st.session_state.messages:
