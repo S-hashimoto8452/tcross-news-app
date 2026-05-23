@@ -311,24 +311,34 @@ client = OpenAI(api_key=st.session_state.api_key.strip())
 
 st.title("TCROSS NEWS Creator  version 3.0")
 
-uploaded_files = st.file_uploader(
-    "ここへPDF・画像をドラッグ＆ドロップ",
-    type=["png", "jpg", "jpeg", "webp"],
-    accept_multiple_files=True
-)
-if uploaded_files:
-    st.session_state.uploaded_images = uploaded_files
-if st.session_state.uploaded_images:
-    st.write(f"{len(st.session_state.uploaded_images)}ファイルを読み込み中")
-if st.button("画像をクリア"):
-    st.session_state.uploaded_images = []
-    st.rerun()
-if st.button("ログアウト"):
-    st.session_state.authenticated = False
-    st.session_state.api_key = ""
-    st.session_state.messages = []
-    st.session_state.uploaded_images = []
-    st.rerun()
+with st.sidebar:
+
+    st.subheader("画像アップロード")
+
+    uploaded_files = st.file_uploader(
+        "ここへ画像をドラッグ＆ドロップ",
+        type=["png", "jpg", "jpeg", "webp"],
+        accept_multiple_files=True
+    )
+
+    if uploaded_files:
+        st.session_state.uploaded_images = uploaded_files
+
+    if st.session_state.uploaded_images:
+        st.write(
+            f"{len(st.session_state.uploaded_images)}ファイルを読み込み中"
+        )
+
+    if st.button("画像をクリア"):
+        st.session_state.uploaded_images = []
+        st.rerun()
+
+    if st.button("ログアウト"):
+        st.session_state.authenticated = False
+        st.session_state.api_key = ""
+        st.session_state.messages = []
+        st.session_state.uploaded_images = []
+        st.rerun()
 
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
