@@ -391,6 +391,15 @@ with st.sidebar:
         st.session_state.pasted_hashes = set()
 
         st.rerun()
+        
+    if st.button("最初から作成する"):
+
+        st.session_state.messages = []
+        st.session_state.uploaded_images = []
+        st.session_state.pasted_images = []
+        st.session_state.pasted_hashes = set()
+
+        st.rerun()
 
     if st.button("ログアウト"):
 
