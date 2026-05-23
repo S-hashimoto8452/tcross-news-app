@@ -384,7 +384,7 @@ if prompt:
 
         try:
             response = client.responses.create(
-                model="gpt-4o-mini",
+                model="gpt-4o",
                 input=api_messages
             )
 
