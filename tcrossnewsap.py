@@ -473,7 +473,7 @@ if prompt:
     })
 
     with st.spinner("生成中..."):
-
+        
         api_messages = [
             {
                 "role": "system",
@@ -487,8 +487,39 @@ if prompt:
         })
 
         try:
+            selected_model = "gpt-4o"
+
+            table_keywords = [
+                "table",
+                "baseline",
+                "patient characteristics",
+                "multivariable",
+                "multivariate",
+                "predictor",
+                "regression",
+                "hazard ratio",
+                "odds ratio",
+                "characteristics",
+                "患者背景",
+                "背景",
+                "多変量",
+                "回帰",
+                "予測因子",
+                "ハザード比",
+                "オッズ比",
+                "table 1",
+                "table1"
+            ]
+
+            prompt_lower = prompt.lower()
+
+            if any(keyword in prompt_lower for keyword in table_keywords):
+                selected_model = "gpt-4.1"
+                
+            st.info(f"使用モデル：{selected_model}")
+
             response = client.responses.create(
-                model="gpt-4o",
+                model=selected_model,
                 input=api_messages
             )
 
