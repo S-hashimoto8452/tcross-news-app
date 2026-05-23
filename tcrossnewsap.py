@@ -1,9 +1,11 @@
 import streamlit as st
 from openai import OpenAI
 import base64
+import hashlib
 from PIL import Image
 from io import BytesIO
 from streamlit_paste_button import paste_image_button as pbutton
+
 
 APP_PASSWORD = "tcross"
 
@@ -286,9 +288,12 @@ if "messages" not in st.session_state:
 
 if "uploaded_images" not in st.session_state:
     st.session_state.uploaded_images = []
-if "pasted_images" not in st.session_state:
 
+if "pasted_images" not in st.session_state:
     st.session_state.pasted_images = []
+
+if "pasted_hashes" not in st.session_state:
+    st.session_state.pasted_hashes = set()
 
 if not st.session_state.authenticated:
     st.title("TCROSS NEWS Creator version 3.0ログイン")
@@ -327,14 +332,27 @@ with st.sidebar:
 
     paste_result = pbutton("スクショを貼り付け")
 
-    if (
-        paste_result.image_data is not None
-        and paste_result.image_data not in st.session_state.pasted_images
-    ):
+if paste_result.image_data is not None:
+
+    buffer = BytesIO()
+
+    paste_result.image_data.convert("RGB").save(
+        buffer,
+        format="JPEG",
+        quality=65
+    )
+
+    image_bytes = buffer.getvalue()
+
+    image_hash = hashlib.md5(image_bytes).hexdigest()
+
+    if image_hash not in st.session_state.pasted_hashes:
 
         st.session_state.pasted_images.append(
             paste_result.image_data
         )
+
+        st.session_state.pasted_hashes.add(image_hash)
 
         st.success("スクショを貼り付けました")
 
@@ -357,6 +375,7 @@ with st.sidebar:
     if st.button("画像をクリア"):
         st.session_state.uploaded_images = []
         st.session_state.pasted_images = []
+        st.session_state.pasted_hashes = set()
         st.rerun()
 
     if st.button("ログアウト"):
