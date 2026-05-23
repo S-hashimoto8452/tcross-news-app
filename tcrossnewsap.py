@@ -3,7 +3,6 @@ from openai import OpenAI
 import base64
 from PIL import Image
 from io import BytesIO
-import fitz
 
 APP_PASSWORD = "tcross"
 
@@ -263,35 +262,6 @@ SYSTEM_PROMPT = """
 
 """
 
-def pdf_to_images(uploaded_pdf):
-
-    pdf_bytes = uploaded_pdf.read()
-
-    pdf_document = fitz.open(
-        stream=pdf_bytes,
-        filetype="pdf"
-    )
-
-    images = []
-
-    for page_num in range(len(pdf_document)):
-
-        page = pdf_document.load_page(page_num)
-
-        pix = page.get_pixmap(
-            matrix=fitz.Matrix(1.5, 1.5)
-        )
-
-        img = Image.frombytes(
-            "RGB",
-            [pix.width, pix.height],
-            pix.samples
-        )
-
-        images.append(img)
-
-    return images
-
 def image_to_data_url(uploaded_file):
     image = Image.open(uploaded_file)
     image.thumbnail((1200, 1200))
@@ -343,7 +313,7 @@ st.title("TCROSS NEWS Creator  version 3.0")
 
 uploaded_files = st.file_uploader(
     "ここへPDF・画像をドラッグ＆ドロップ",
-    type=["png", "jpg", "jpeg", "webp", "pdf"],
+    type=["png", "jpg", "jpeg", "webp"],
     accept_multiple_files=True
 )
 if uploaded_files:
@@ -387,31 +357,10 @@ if prompt:
 
     for file in st.session_state.uploaded_images:
 
-        if file.type == "application/pdf":
-
-            pdf_images = pdf_to_images(file)
-
-            for pdf_img in pdf_images:
-
-                buffer = BytesIO()
-
-                pdf_img.save(buffer, format="JPEG", quality=65)
-
-                image_base64 = base64.b64encode(
-                    buffer.getvalue()
-                ).decode("utf-8")
-
-                content.append({
-                    "type": "input_image",
-                    "image_url": f"data:image/jpeg;base64,{image_base64}"
-                })
-
-        else:
-
-            content.append({
-                "type": "input_image",
-                "image_url": image_to_data_url(file)
-            })
+        content.append({
+            "type": "input_image",
+            "image_url": image_to_data_url(file)
+        })
 
     content.append({
         "type": "input_text",
