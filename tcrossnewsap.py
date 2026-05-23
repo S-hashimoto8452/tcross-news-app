@@ -327,7 +327,10 @@ with st.sidebar:
 
     paste_result = pbutton("スクショを貼り付け")
 
-    if paste_result.image_data is not None:
+    if (
+        paste_result.image_data is not None
+        and paste_result.image_data not in st.session_state.pasted_images
+    ):
 
         st.session_state.pasted_images.append(
             paste_result.image_data
@@ -342,7 +345,7 @@ with st.sidebar:
         st.write(
             f"{len(st.session_state.uploaded_images)}ファイルを読み込み中"
         )
-    if st.session_state.pasted_images:
+    if len(st.session_state.pasted_images) > 0:
         st.write(
             f"{len(st.session_state.pasted_images)}枚のスクショを保存中"
         )
