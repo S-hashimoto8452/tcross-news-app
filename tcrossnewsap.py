@@ -342,6 +342,14 @@ with st.sidebar:
         st.write(
             f"{len(st.session_state.uploaded_images)}ファイルを読み込み中"
         )
+    if st.session_state.pasted_images:
+        st.write(
+            f"{len(st.session_state.pasted_images)}枚のスクショを保存中"
+        )
+    total_images = len(st.session_state.uploaded_images) + len(st.session_state.pasted_images)
+
+    if total_images > 0:
+        st.info(f"合計{total_images}枚を解析対象にしています")
 
     if st.button("画像をクリア"):
         st.session_state.uploaded_images = []
