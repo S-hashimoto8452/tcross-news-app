@@ -3,6 +3,7 @@ from openai import OpenAI
 import base64
 from PIL import Image
 from io import BytesIO
+import fitz
 
 APP_PASSWORD = "tcross"
 
@@ -262,6 +263,35 @@ SYSTEM_PROMPT = """
 
 """
 
+def pdf_to_images(uploaded_pdf):
+
+    pdf_bytes = uploaded_pdf.read()
+
+    pdf_document = fitz.open(
+        stream=pdf_bytes,
+        filetype="pdf"
+    )
+
+    images = []
+
+    for page_num in range(len(pdf_document)):
+
+        page = pdf_document.load_page(page_num)
+
+        pix = page.get_pixmap(
+            matrix=fitz.Matrix(1.5, 1.5)
+        )
+
+        img = Image.frombytes(
+            "RGB",
+            [pix.width, pix.height],
+            pix.samples
+        )
+
+        images.append(img)
+
+    return images
+
 def image_to_data_url(uploaded_file):
     image = Image.open(uploaded_file)
     image.thumbnail((1200, 1200))
@@ -311,32 +341,24 @@ client = OpenAI(api_key=st.session_state.api_key.strip())
 
 st.title("TCROSS NEWS Creator  version 3.0")
 
-with st.sidebar:
-    st.subheader("スライド画像")
-    uploaded_files = st.file_uploader(
-        "複数スライドをアップロード",
-        type=["png", "jpg", "jpeg", "webp"],
-        accept_multiple_files=True
-    )
-
-    if uploaded_files:
-        st.session_state.uploaded_images = uploaded_files
-
-    if st.session_state.uploaded_images:
-        st.write(f"{len(st.session_state.uploaded_images)}枚の画像を読み込み中")
-        for img in st.session_state.uploaded_images:
-            st.image(img, use_container_width=True)
-
-    if st.button("画像をクリア"):
-        st.session_state.uploaded_images = []
-        st.rerun()
-
-    if st.button("ログアウト"):
-        st.session_state.authenticated = False
-        st.session_state.api_key = ""
-        st.session_state.messages = []
-        st.session_state.uploaded_images = []
-        st.rerun()
+uploaded_files = st.file_uploader(
+    "ここへPDF・画像をドラッグ＆ドロップ",
+    type=["png", "jpg", "jpeg", "webp", "pdf"],
+    accept_multiple_files=True
+)
+if uploaded_files:
+    st.session_state.uploaded_images = uploaded_files
+if st.session_state.uploaded_images:
+    st.write(f"{len(st.session_state.uploaded_images)}ファイルを読み込み中")
+if st.button("画像をクリア"):
+    st.session_state.uploaded_images = []
+    st.rerun()
+if st.button("ログアウト"):
+    st.session_state.authenticated = False
+    st.session_state.api_key = ""
+    st.session_state.messages = []
+    st.session_state.uploaded_images = []
+    st.rerun()
 
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
@@ -347,6 +369,12 @@ prompt = st.chat_input(
 )
 
 if prompt:
+    if not st.session_state.uploaded_images:
+
+        st.error("PDFまたは画像をアップロードしてください")
+
+        st.stop()
+
     st.session_state.messages.append({
         "role": "user",
         "content": prompt
@@ -355,18 +383,40 @@ if prompt:
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    content = [
-        {
-            "type": "input_text",
-            "text": prompt
-        }
-    ]
+    content = []
 
-    for img in st.session_state.uploaded_images:
-        content.append({
-            "type": "input_image",
-            "image_url": image_to_data_url(img)
-        })
+    for file in st.session_state.uploaded_images:
+
+        if file.type == "application/pdf":
+
+            pdf_images = pdf_to_images(file)
+
+            for pdf_img in pdf_images:
+
+                buffer = BytesIO()
+
+                pdf_img.save(buffer, format="JPEG", quality=65)
+
+                image_base64 = base64.b64encode(
+                    buffer.getvalue()
+                ).decode("utf-8")
+
+                content.append({
+                    "type": "input_image",
+                    "image_url": f"data:image/jpeg;base64,{image_base64}"
+                })
+
+        else:
+
+            content.append({
+                "type": "input_image",
+                "image_url": image_to_data_url(file)
+            })
+
+    content.append({
+        "type": "input_text",
+        "text": prompt
+    })
 
     with st.spinner("生成中..."):
 
