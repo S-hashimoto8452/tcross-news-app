@@ -273,27 +273,21 @@ if prompt:
             }
         ]
 
-        for msg in []:
-
-            api_messages.append({
-                "role": msg["role"],
-                "content": msg["content"]
-            })
-
         api_messages.append({
             "role": "user",
             "content": content
         })
 
-    try:
-        response = client.responses.create(
-            model="gpt-4o-mini",
-            input=api_messages
-        )
-    except Exception as e:
-        st.error("OpenAI APIエラーが発生しました")
-        st.code(str(e))
-        st.stop()
+        try:
+            response = client.responses.create(
+                model="gpt-4o-mini",
+                input=api_messages
+            )
+
+        except Exception as e:
+            st.error("OpenAI APIエラーが発生しました")
+            st.code(str(e))
+            st.stop()
 
     answer = response.output_text
 
