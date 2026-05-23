@@ -330,7 +330,10 @@ with st.sidebar:
         accept_multiple_files=True
     )
 
-    paste_result = pbutton("スクショを貼り付け")
+    paste_result = pbutton(
+        "スクショを貼り付け",
+        key=f"paste_button_{len(st.session_state.pasted_hashes)}"
+    )
 
     if paste_result.image_data is not None:
 
@@ -370,7 +373,7 @@ with st.sidebar:
         )
     else:
         st.write("保存中のスクショはありません")
-        
+
     total_images = (
         len(st.session_state.uploaded_images)
         + len(st.session_state.pasted_images)
